@@ -134,6 +134,23 @@ public:
         if (selection_id.empty() && m_pads.size() == 1)
             return m_pads.begin()->second;
 
+        auto stable_id = selection_id;
+        std::string preferred_instance;
+        const auto instance_separator = stable_id.find("#instance:");
+        if (instance_separator != std::string::npos) {
+            preferred_instance = stable_id.substr(instance_separator + sizeof("#instance:") - 1);
+            stable_id.resize(instance_separator);
+        }
+
+        std::string legacy_display_name;
+        const auto id_label = selection_id.rfind(" (ID ");
+        if (id_label != std::string::npos && selection_id.back() == ')') {
+            legacy_display_name = selection_id.substr(0, id_label);
+            preferred_instance = selection_id.substr(id_label + 5, selection_id.size() - id_label - 6);
+        }
+
+        std::shared_ptr<sdl_gamepad> stable_match;
+        std::shared_ptr<sdl_gamepad> preferred_match;
         std::shared_ptr<sdl_gamepad> legacy_match;
         for (const auto &pad : m_pads) {
             if (pad.second->selection_id() == selection_id)
@@ -142,10 +159,19 @@ public:
                 pad.second->display_name() + " (ID " + std::to_string(pad.second->index()) + ")";
             if (display_label == selection_id)
                 return pad.second;
-            if (pad.second->display_name() == selection_id && !legacy_match)
+            if (!preferred_instance.empty() &&
+                std::to_string(pad.second->index()) == preferred_instance)
+                preferred_match = pad.second;
+            if (!stable_id.empty() && pad.second->device_id() == stable_id && !stable_match)
+                stable_match = pad.second;
+            if ((pad.second->display_name() == selection_id ||
+                 (!legacy_display_name.empty() && pad.second->display_name() == legacy_display_name)) &&
+                !legacy_match)
                 legacy_match = pad.second;
         }
-        return legacy_match;
+        if (preferred_match)
+            return preferred_match;
+        return stable_match ? stable_match : legacy_match;
     }
 
     std::shared_ptr<sdl_gamepad> get_controller_from_instance_id(SDL_JoystickID id)

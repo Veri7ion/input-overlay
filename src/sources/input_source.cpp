@@ -59,14 +59,16 @@ inline void input_source::update(obs_data_t *settings)
 
     m_settings.gamepad_name = obs_data_get_string(settings, S_CONTROLLER_ID);
 
-    if (m_settings.use_local_input() && gamepad_hook::state && gamepad_hook::local_gamepads) {
+    m_settings.gamepad.reset();
+    if (m_settings.use_local_input() && gamepad_hook::local_gamepads) {
         m_settings.gamepad =
             gamepad_hook::local_gamepads->get_controller_from_selection_id(m_settings.gamepad_name);
         if (m_settings.gamepad)
             binfo("Input overlay '%s' selected gamepad '%s'", obs_source_get_name(m_source),
                   m_settings.gamepad->display_name().c_str());
         else
-            bwarn("Input overlay '%s' has no matching local gamepad selection", obs_source_get_name(m_source));
+            bdebug("Input overlay '%s' waiting for saved gamepad selection '%s'", obs_source_get_name(m_source),
+                   m_settings.gamepad_name.c_str());
     } else if (wss::state) {
         std::lock_guard<std::mutex> lock(network::remote_data_map_mutex);
         auto data = network::remote_data.find(m_settings.selected_source);
@@ -105,13 +107,17 @@ inline void input_source::tick(float seconds)
         m_overlay->tick(seconds);
     }
 
+    if (m_settings.use_local_input() &&
+        (!m_settings.gamepad || !m_settings.gamepad->valid()) && gamepad_hook::local_gamepads) {
+        m_settings.gamepad =
+            gamepad_hook::local_gamepads->get_controller_from_selection_id(m_settings.gamepad_name);
+        if (m_settings.gamepad)
+            binfo("Input overlay '%s' restored gamepad selection '%s' as '%s'", obs_source_get_name(m_source),
+                  m_settings.gamepad_name.c_str(), m_settings.gamepad->display_name().c_str());
+    }
+
     m_settings.input_source_check_timer += seconds;
     if (m_settings.input_source_check_timer >= 1) {
-        if (m_settings.use_local_input() && gamepad_hook::state) {
-            if (!m_settings.gamepad || !m_settings.gamepad->valid())
-                m_settings.gamepad =
-                    gamepad_hook::local_gamepads->get_controller_from_selection_id(m_settings.gamepad_name);
-        }
         // Remote gamepads directly store their data in the gamepad maps
 
         // Check if remote connection is available

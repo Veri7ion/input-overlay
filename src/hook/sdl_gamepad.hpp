@@ -11,6 +11,7 @@ struct input_data;
 class sdl_gamepad {
 protected:
     std::string m_display_name{};
+    std::string m_device_id{};
     std::string m_selection_id{};
     SDL_Gamepad *m_controller{};
     int m_player_index{};
@@ -33,11 +34,12 @@ public:
             const char *serial = SDL_GetGamepadSerial(m_controller);
             const char *path = SDL_GetGamepadPath(m_controller);
             if (serial && *serial)
-                m_selection_id = std::string("serial:") + serial;
+                m_device_id = std::string("serial:") + serial;
             else if (path && *path)
-                m_selection_id = std::string("path:") + path;
+                m_device_id = std::string("path:") + path;
             else
-                m_selection_id = std::string("instance:") + std::to_string(jid);
+                m_device_id = std::string("instance:") + std::to_string(jid);
+            m_selection_id = m_device_id;
             m_player_index = SDL_clamp(SDL_GetGamepadPlayerIndex(m_controller), 0, 4);
         } else {
             m_valid = false;
@@ -50,6 +52,7 @@ public:
     int player_index() const { return m_player_index; } // player 1 through 4
 
     std::string display_name() const { return m_display_name; }
+    std::string device_id() const { return m_device_id; }
     std::string selection_id() const { return m_selection_id; }
     void set_selection_id(std::string id) { m_selection_id = std::move(id); }
 
