@@ -34,7 +34,7 @@ inline void sdl_init()
     auto compile_ver_minor = SDL_VERSIONNUM_MINOR(compile_ver);
     auto compile_ver_patch = SDL_VERSIONNUM_MICRO(compile_ver);
 
-    binfo("Initializing SDL2 for gamepad input (compile-time: %i.%i.%i, run-time:  %i.%i.%i)", compile_ver_major,
+    binfo("Initializing SDL3 for gamepad input (compile-time: %i.%i.%i, run-time:  %i.%i.%i)", compile_ver_major,
           compile_ver_minor, compile_ver_patch, link_ver_major, link_ver_minor, link_ver_patch);
 
     // TODO: I think there's a flag for switching a and b on switch controllers, we might want that
@@ -45,7 +45,7 @@ inline void sdl_init()
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_LINUX_DEADZONES, "1");
 
-    if (SDL_WasInit(0) == INIT_FLAGS_FOR_SDL || !SDL_Init(INIT_FLAGS_FOR_SDL)) {
+    if (!SDL_InitSubSystem(INIT_FLAGS_FOR_SDL)) {
         berr("Couldn't initialize SDL: %s\n", SDL_GetError());
         return;
     }
@@ -54,9 +54,9 @@ inline void sdl_init()
     SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
 
     if (WIN32) {
-        dummy_window = SDL_CreateWindow("input-overlay sdl2 window", 10, 10, SDL_WINDOW_HIDDEN);
+        dummy_window = SDL_CreateWindow("input-overlay SDL3 window", 10, 10, SDL_WINDOW_HIDDEN);
         if (!dummy_window) {
-            berr("Couldn't create sdl2 window: %s\n", SDL_GetError());
+            berr("Couldn't create SDL3 window: %s\n", SDL_GetError());
             return;
         }
     }
@@ -66,7 +66,7 @@ inline void sdl_deinit()
 {
     SDL_DestroyWindow(dummy_window);
     dummy_window = nullptr;
-    SDL_Quit();
+    SDL_QuitSubSystem(INIT_FLAGS_FOR_SDL);
 }
 
 void start()
@@ -75,9 +75,9 @@ void start()
         return;
 
     /*
-        So apparently sdl2 will not deliver gamepad events if the initialization
+        So apparently SDL3 will not deliver gamepad events if the initialization
         doesn't take place in the main thread.
-        On Windows sdl2 won't deliver events if initalization and event polling take place on
+        On Windows SDL3 won't deliver events if initalization and event polling take place on
         differnt thread.
     */
 
@@ -133,22 +133,23 @@ gamepads::gamepads()
 
         SDL_GUIDToString(sdl_guid, guid, sizeof(guid));
 
-        if (SDL_IsGamepad(i)) {
+        if (SDL_IsGamepad(id)) {
             char fmt[512];
             name = SDL_GetGamepadNameForID(id);
-            description = controller_description(i);
-            std::snprintf(fmt, 512, "%s - %s", name, description);
-            add_controller(i, fmt);
+            description = controller_description(id);
+            std::snprintf(fmt, sizeof(fmt), "%s - %s", name ? name : "Gamepad", description);
+            add_controller(id, fmt);
         } else {
             name = SDL_GetJoystickNameForID(id);
             path = SDL_GetJoystickPathForID(id);
             description = "Joystick";
             // TODO: also register those?
         }
-        bdebug("Found %s %d: %s%s%s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)", description, i,
+        bdebug("Found %s %u: %s%s%s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)", description, id,
                name ? name : "Unknown", path ? ", " : "", path ? path : "", guid, SDL_GetJoystickVendorForID(id),
                SDL_GetJoystickProductForID(id), SDL_GetJoystickPlayerIndexForID(id));
     }
+    SDL_free(ids);
 
     // Confirm object has been created
     // at end of constructor, instead
@@ -176,7 +177,7 @@ void gamepads::event_loop()
                 char fmt[512];
                 name = SDL_GetGamepadNameForID(event.gdevice.which);
                 description = controller_description(event.gdevice.which);
-                std::snprintf(fmt, 512, "%s - %s", name, description);
+                std::snprintf(fmt, sizeof(fmt), "%s - %s", name ? name : "Gamepad", description);
                 add_controller(event.gdevice.which, fmt);
                 binfo("Found new %s with id %i", description, event.gdevice.which);
                 break;
@@ -191,20 +192,33 @@ void gamepads::event_loop()
             case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
                 // TODO: process touchpad events?
                 break;
+            case SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH:
+            case SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE:
+                break;
             case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
                 // TODO: process sensor events?
                 break;
 
             case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
                 io_config::last_sdl_gamepad_axis = event.gaxis.axis;
-                auto pad = get_controller_from_instance_id(event.gdevice.which);
+                auto pad = get_controller_from_instance_id(event.gaxis.which);
+                if (!pad) {
+                    bdebug("Ignoring axis event for unregistered gamepad id %u",
+                           static_cast<unsigned>(event.gaxis.which));
+                    break;
+                }
                 std::lock_guard<std::mutex> lock(pad->mutex());
                 pad->axis()[event.gaxis.axis] = event.gaxis.value / float(INT16_MAX);
             } break;
             case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
             case SDL_EVENT_GAMEPAD_BUTTON_UP: {
                 io_config::last_sdl_gamepad_button = event.gbutton.button;
-                auto pad = get_controller_from_instance_id(event.gdevice.which);
+                auto pad = get_controller_from_instance_id(event.gbutton.which);
+                if (!pad) {
+                    bdebug("Ignoring button event for unregistered gamepad id %u",
+                           static_cast<unsigned>(event.gbutton.which));
+                    break;
+                }
                 std::lock_guard<std::mutex> lock(pad->mutex());
                 pad->buttons()[event.gbutton.button] = event.gbutton.down;
             } break;

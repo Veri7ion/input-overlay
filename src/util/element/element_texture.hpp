@@ -29,6 +29,10 @@ public:
     void load(const QJsonObject &obj) override;
     void draw(gs_effect_t *effect, overlay_image_t *image, sources::overlay_settings *settings) override;
     void draw(gs_effect_t *effect, overlay_image_t *image, const gs_rect *rect) const;
-    static void draw(gs_effect_t *effect, overlay_image_t *image, const gs_rect *rect, const vec2 *pos);
-    static void draw(gs_effect *effect, overlay_image_t *image, const gs_rect *rect, const vec2 *pos, float angle);
+    void draw(gs_effect_t *effect, overlay_image_t *image, const gs_rect *rect, const vec2 *pos) const;
+    void draw(gs_effect *effect, overlay_image_t *image, const gs_rect *rect, const vec2 *pos,
+              float angle) const;
+
+protected:
+    float m_texture_scale = 1.f;
 };

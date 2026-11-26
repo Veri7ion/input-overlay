@@ -26,6 +26,7 @@ public:
     explicit element_button(element_type t) : element_texture(t), m_pressed() {}
 
     void load(const QJsonObject &objc) override;
+    bool idle_in_background() const { return m_idle_in_background; }
     void draw(gs_effect_t *effect, overlay_image_t *image, sources::overlay_settings *settings) override
     {
         element_texture::draw(effect, image, settings);
@@ -33,6 +34,7 @@ public:
 
 protected:
     gs_rect m_pressed;
+    bool m_idle_in_background = false;
 };
 
 class element_keyboard_key : public element_button {
@@ -54,5 +56,6 @@ class element_gamepad_button : public element_button {
 public:
     element_gamepad_button() : element_button(ET_GAMEPAD_BUTTON) {}
 
+    void load(const QJsonObject &obj) override;
     void draw(gs_effect_t *effect, overlay_image_t *image, sources::overlay_settings *settings) override;
 };

@@ -64,7 +64,7 @@ io_settings_dialog::io_settings_dialog(QWidget *parent) : QDialog(parent, Qt::Di
     connect(ui->cb_ds_enhanced, &QCheckBox::stateChanged, this, &io_settings_dialog::CbDSEnhancedModeChanged);
 #endif
 
-    ui->tab_remote->hide(); // TODO: Redo protocol and update client to sdl2
+    ui->tab_remote->hide(); // TODO: Redo protocol and update client to SDL3
 
     /* Display local ip for convenience */
     auto text = ui->lbl_status->text();

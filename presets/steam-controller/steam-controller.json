@@ -1,0 +1,568 @@
+{
+  "default_height": 0,
+  "default_width": 0,
+  "space_h": 0,
+  "space_v": 0,
+  "flags": 6,
+  "overlay_width": 800,
+  "overlay_height": 800,
+  "elements": [
+    {
+      "id": "controller_art",
+      "type": 0,
+      "pos": [
+        0,
+        0
+      ],
+      "mapping": [
+        0,
+        0,
+        800,
+        800
+      ],
+      "z_level": 0
+    },
+    {
+      "id": "dpad_up",
+      "type": 2,
+      "code": 11,
+      "pos": [
+        92,
+        259
+      ],
+      "mapping": [
+        582,
+        802,
+        126,
+        128
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "dpad_down",
+      "type": 2,
+      "code": 12,
+      "pos": [
+        92,
+        259
+      ],
+      "mapping": [
+        802,
+        737,
+        126,
+        128
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "dpad_left",
+      "type": 2,
+      "code": 13,
+      "pos": [
+        92,
+        259
+      ],
+      "mapping": [
+        932,
+        737,
+        126,
+        128
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "dpad_right",
+      "type": 2,
+      "code": 14,
+      "pos": [
+        92,
+        259
+      ],
+      "mapping": [
+        941,
+        401,
+        126,
+        128
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "left_stick",
+      "type": 5,
+      "side": 0,
+      "capsense": 0,
+      "stick_radius": 40,
+      "pos": [
+        255,
+        353
+      ],
+      "mapping": [
+        712,
+        969,
+        59,
+        58
+      ],
+      "z_level": 1
+    },
+    {
+      "id": "right_stick",
+      "type": 5,
+      "side": 1,
+      "capsense": 1,
+      "stick_radius": 40,
+      "pos": [
+        485,
+        353
+      ],
+      "mapping": [
+        1206,
+        719,
+        59,
+        58
+      ],
+      "z_level": 1
+    },
+    {
+      "id": "lt",
+      "type": 6,
+      "side": 0,
+      "direction": 1,
+      "trigger_mode": false,
+      "pos": [
+        110,
+        118
+      ],
+      "mapping": [
+        2,
+        802,
+        150,
+        146
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "rt",
+      "type": 6,
+      "side": 1,
+      "direction": 1,
+      "trigger_mode": false,
+      "pos": [
+        540,
+        118
+      ],
+      "mapping": [
+        156,
+        802,
+        150,
+        146
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "a",
+      "type": 2,
+      "code": 0,
+      "pos": [
+        617,
+        341
+      ],
+      "mapping": [
+        1269,
+        838,
+        55,
+        55
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "b",
+      "type": 2,
+      "code": 1,
+      "pos": [
+        662,
+        297
+      ],
+      "mapping": [
+        1206,
+        842,
+        56,
+        55
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "x",
+      "type": 2,
+      "code": 2,
+      "pos": [
+        571,
+        297
+      ],
+      "mapping": [
+        1266,
+        955,
+        56,
+        55
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "y",
+      "type": 2,
+      "code": 3,
+      "pos": [
+        617,
+        250
+      ],
+      "mapping": [
+        1062,
+        959,
+        55,
+        55
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "view",
+      "type": 2,
+      "code": 4,
+      "pos": [
+        229,
+        253
+      ],
+      "mapping": [
+        1201,
+        959,
+        59,
+        29
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "steam",
+      "type": 2,
+      "code": 5,
+      "pos": [
+        370,
+        296
+      ],
+      "mapping": [
+        1269,
+        719,
+        58,
+        56
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "menu",
+      "type": 2,
+      "code": 6,
+      "pos": [
+        512,
+        253
+      ],
+      "mapping": [
+        1121,
+        1024,
+        57,
+        29
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "left_stick_press",
+      "type": 2,
+      "code": 7,
+      "pos": [
+        218,
+        317
+      ],
+      "mapping": [
+        310,
+        802,
+        132,
+        131
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "right_stick_press",
+      "type": 2,
+      "code": 8,
+      "pos": [
+        448,
+        317
+      ],
+      "mapping": [
+        446,
+        802,
+        132,
+        131
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "lb",
+      "type": 2,
+      "code": 9,
+      "pos": [
+        94,
+        188
+      ],
+      "mapping": [
+        1071,
+        568,
+        140,
+        66
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "rb",
+      "type": 2,
+      "code": 10,
+      "pos": [
+        566,
+        188
+      ],
+      "mapping": [
+        1062,
+        707,
+        140,
+        66
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "touch_click",
+      "type": 2,
+      "code": 15,
+      "pos": [
+        364,
+        517
+      ],
+      "mapping": [
+        941,
+        664,
+        71,
+        31
+      ],
+      "z_level": 1,
+      "idle_in_background": true
+    },
+    {
+      "id": "rg2",
+      "type": 2,
+      "code": 16,
+      "pos": [
+        616,
+        468
+      ],
+      "mapping": [
+        712,
+        802,
+        56,
+        80
+      ],
+      "z_level": 1
+    },
+    {
+      "id": "lg2",
+      "type": 2,
+      "code": 17,
+      "pos": [
+        126,
+        468
+      ],
+      "mapping": [
+        1071,
+        401,
+        56,
+        80
+      ],
+      "z_level": 1
+    },
+    {
+      "id": "rg1",
+      "type": 2,
+      "code": 18,
+      "pos": [
+        630,
+        563
+      ],
+      "mapping": [
+        1131,
+        401,
+        56,
+        80
+      ],
+      "z_level": 1
+    },
+    {
+      "id": "lg1",
+      "type": 2,
+      "code": 19,
+      "pos": [
+        112,
+        563
+      ],
+      "mapping": [
+        1191,
+        401,
+        56,
+        80
+      ],
+      "z_level": 1
+    },
+    {
+      "id": "left_grip_sense",
+      "type": 2,
+      "code": 0,
+      "pos": [
+        0,
+        362
+      ],
+      "mapping": [
+        802,
+        2,
+        65,
+        364
+      ],
+      "z_level": 1,
+      "capsense": 2
+    },
+    {
+      "id": "right_grip_sense",
+      "type": 2,
+      "code": 0,
+      "pos": [
+        735,
+        362
+      ],
+      "mapping": [
+        871,
+        2,
+        66,
+        364
+      ],
+      "z_level": 1,
+      "capsense": 3
+    },
+    {
+      "id": "left_touchpad_outline",
+      "type": 5,
+      "side": 0,
+      "touchpad_index": 0,
+      "touchpad_outline": true,
+      "pos": [
+        150,
+        433
+      ],
+      "mapping": [
+        941,
+        2,
+        195,
+        196
+      ],
+      "z_level": 1
+    },
+    {
+      "id": "right_touchpad_outline",
+      "type": 5,
+      "side": 1,
+      "touchpad_index": 1,
+      "touchpad_outline": true,
+      "pos": [
+        453,
+        433
+      ],
+      "mapping": [
+        1140,
+        2,
+        196,
+        196
+      ],
+      "z_level": 1
+    },
+    {
+      "id": "left_touchpad_cursor",
+      "type": 5,
+      "side": 0,
+      "touchpad_index": 0,
+      "touchpad_transform": [
+        160.7412,
+        27.978,
+        -27.978,
+        160.7412
+      ],
+      "touchpad_click_code": 20,
+      "touchpad_click_mapping": [
+        1121,
+        846,
+        76,
+        76
+      ],
+      "pos": [
+        210,
+        493
+      ],
+      "mapping": [
+        1251,
+        401,
+        76,
+        76
+      ],
+      "z_level": 2
+    },
+    {
+      "id": "right_touchpad_cursor",
+      "type": 5,
+      "side": 1,
+      "touchpad_index": 1,
+      "touchpad_transform": [
+        160.7412,
+        -27.978,
+        27.978,
+        160.7412
+      ],
+      "touchpad_click_code": 21,
+      "touchpad_click_mapping": [
+        1121,
+        926,
+        76,
+        76
+      ],
+      "pos": [
+        513,
+        493
+      ],
+      "mapping": [
+        1251,
+        560,
+        76,
+        76
+      ],
+      "z_level": 2
+    }
+  ],
+  "version": 508,
+  "texture_scale": 1.3333333333333333
+}

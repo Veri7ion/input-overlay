@@ -67,6 +67,7 @@ private:
     overlay_image_file_t *m_image = nullptr;
     sources::overlay_settings *m_settings = nullptr;
     bool m_is_loaded = false;
+    float m_texture_scale = 1.f;
     std::vector<std::unique_ptr<element>> m_elements;
     uint16_t m_track_radius{};
     uint16_t m_max_mouse_movement{};

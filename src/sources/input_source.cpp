@@ -21,6 +21,7 @@
 #include "../util/lang.h"
 #include "../util/obs_util.hpp"
 #include "../util/settings.h"
+#include "../util/log.h"
 #include "../util/config.hpp"
 #include "../network/websocket_server.hpp"
 #include "../network/remote_connection.hpp"
@@ -59,7 +60,13 @@ inline void input_source::update(obs_data_t *settings)
     m_settings.gamepad_name = obs_data_get_string(settings, S_CONTROLLER_ID);
 
     if (m_settings.use_local_input() && gamepad_hook::state && gamepad_hook::local_gamepads) {
-        m_settings.gamepad = gamepad_hook::local_gamepads->get_controller_from_name(m_settings.gamepad_name);
+        m_settings.gamepad =
+            gamepad_hook::local_gamepads->get_controller_from_selection_id(m_settings.gamepad_name);
+        if (m_settings.gamepad)
+            binfo("Input overlay '%s' selected gamepad '%s'", obs_source_get_name(m_source),
+                  m_settings.gamepad->display_name().c_str());
+        else
+            bwarn("Input overlay '%s' has no matching local gamepad selection", obs_source_get_name(m_source));
     } else if (wss::state) {
         std::lock_guard<std::mutex> lock(network::remote_data_map_mutex);
         auto data = network::remote_data.find(m_settings.selected_source);
@@ -102,7 +109,8 @@ inline void input_source::tick(float seconds)
     if (m_settings.input_source_check_timer >= 1) {
         if (m_settings.use_local_input() && gamepad_hook::state) {
             if (!m_settings.gamepad || !m_settings.gamepad->valid())
-                m_settings.gamepad = gamepad_hook::local_gamepads->get_controller_from_name(m_settings.gamepad_name);
+                m_settings.gamepad =
+                    gamepad_hook::local_gamepads->get_controller_from_selection_id(m_settings.gamepad_name);
         }
         // Remote gamepads directly store their data in the gamepad maps
 
@@ -147,8 +155,9 @@ bool reload_pads(obs_properties_t *, obs_property_t *property, void *data)
         std::lock_guard<std::mutex> lock(gamepad_hook::local_gamepads->mutex());
         for (const auto &pad : gamepad_hook::local_gamepads->pads()) {
             auto controller = pad.second;
-            auto name = controller->identifier();
-            obs_property_list_add_string(property, name.c_str(), name.c_str());
+            auto display_name = controller->display_name() + " (ID " + std::to_string(pad.first) + ")";
+            auto selection_id = controller->selection_id();
+            obs_property_list_add_string(property, display_name.c_str(), selection_id.c_str());
         }
     } else if (wss::state && src->m_settings.remote_input_data) {
         auto input_data = src->m_settings.remote_input_data;

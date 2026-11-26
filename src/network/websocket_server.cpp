@@ -171,6 +171,23 @@ void dispatch_sdl_event(const SDL_Event *e, const std::string &source_name, inpu
         obj["virtual_code"] = e->gbutton.button;
         obj["virtual_value"] = e->gbutton.down;
         break;
+    case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
+    case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
+    case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
+        obj["event_type"] = "controller_touchpad";
+        obj["touchpad"] = e->gtouchpad.touchpad;
+        obj["finger"] = e->gtouchpad.finger;
+        obj["down"] = e->type != SDL_EVENT_GAMEPAD_TOUCHPAD_UP;
+        obj["x"] = e->gtouchpad.x;
+        obj["y"] = e->gtouchpad.y;
+        obj["pressure"] = e->gtouchpad.pressure;
+        break;
+    case SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH:
+    case SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE:
+        obj["event_type"] = "controller_capsense";
+        obj["virtual_code"] = e->gcapsense.capsense;
+        obj["virtual_value"] = e->gcapsense.down;
+        break;
     default:
         return; /* ignore other events */
     }

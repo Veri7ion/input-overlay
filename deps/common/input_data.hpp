@@ -36,6 +36,16 @@ struct input_data {
 
     template<class T, std::size_t L> using gamepad_map = std::unordered_map<std::string, std::array<T, L>>;
 
+    static constexpr std::size_t gamepad_touchpad_count = 2;
+    static constexpr int gamepad_capsense_code_base = SDL_GAMEPAD_BUTTON_COUNT;
+
+    struct touchpad_state {
+        bool down{};
+        float x{0.5f};
+        float y{0.5f};
+        float pressure{};
+    };
+
     std::mutex m_mutex;
 
     std::atomic<uint64_t> last_event = 0;
@@ -57,6 +67,8 @@ struct input_data {
     /* Gamepad data */
     gamepad_map<bool, SDL_GAMEPAD_BUTTON_COUNT> gamepad_buttons;
     gamepad_map<float, SDL_GAMEPAD_AXIS_COUNT> gamepad_axis;
+    gamepad_map<bool, SDL_GAMEPAD_CAPSENSE_COUNT> gamepad_capsense;
+    gamepad_map<touchpad_state, gamepad_touchpad_count> gamepad_touchpads;
 
     /* gamepad names */
     std::unordered_map<int, std::string> remote_gamepad_names;

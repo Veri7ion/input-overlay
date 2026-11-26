@@ -294,6 +294,12 @@ bool overlay::load_cfg()
     const auto flag = true;
 
     if (err.error == QJsonParseError::NoError) {
+        const auto texture_scale = cfg_obj["texture_scale"].toDouble(1.0);
+        if (texture_scale < 1.0 || texture_scale > 4.0) {
+            berr("Invalid texture_scale %.2f in layout %s", texture_scale, m_settings->layout_file.c_str());
+            return false;
+        }
+        m_texture_scale = static_cast<float>(texture_scale);
         bool needs_conversion = false;
         if (!cfg_obj[CFG_VERSION].isDouble() || cfg_obj[CFG_VERSION].toDouble() < CFG_CURRENT_VERSION) {
             bwarn(
@@ -443,7 +449,9 @@ void overlay::refresh_data()
 
 void overlay::load_element(const QJsonObject &obj, bool debug, bool needs_conversion)
 {
-    const auto type = obj[CFG_TYPE].toInt();
+    auto element_obj = obj;
+    element_obj["texture_scale"] = m_texture_scale;
+    const auto type = element_obj[CFG_TYPE].toInt();
     element *new_element = nullptr;
 
     switch (type) {
@@ -483,7 +491,7 @@ void overlay::load_element(const QJsonObject &obj, bool debug, bool needs_conver
     }
 
     if (new_element) {
-        new_element->load(obj);
+        new_element->load(element_obj);
         if (new_element->get_type() == ET_KEYBOARD_KEY && needs_conversion) {
             auto *key_element = static_cast<element_keyboard_key *>(new_element);
             const auto keycode = key_element->get_keycode();

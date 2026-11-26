@@ -18,8 +18,17 @@
 
 #include "element_texture.hpp"
 
+#include <cmath>
+
 extern "C" {
 #include <graphics/image-file.h>
+}
+
+namespace {
+int scale_to_pixels(int value, float scale)
+{
+    return static_cast<int>(std::lround(static_cast<float>(value) * scale));
+}
 }
 
 element_texture::element_texture() : element(ET_TEXTURE)
@@ -36,6 +45,7 @@ void element_texture::load(const QJsonObject &obj)
 {
     read_pos(obj);
     read_mapping(obj);
+    m_texture_scale = static_cast<float>(obj["texture_scale"].toDouble(1.0));
 }
 
 void element_texture::draw(gs_effect_t *effect, overlay_image_t *image, sources::overlay_settings *settings)
@@ -49,7 +59,8 @@ void element_texture::draw(gs_effect_t *effect, overlay_image_t *image, const gs
     draw(effect, image, rect ? rect : &m_mapping, &m_pos);
 }
 
-void element_texture::draw(gs_effect_t *effect, overlay_image_t *image, const gs_rect *rect, const vec2 *pos)
+void element_texture::draw(gs_effect_t *effect, overlay_image_t *image, const gs_rect *rect,
+                           const vec2 *pos) const
 {
     gs_blend_state_push();
     gs_enable_blending(true);
@@ -58,14 +69,18 @@ void element_texture::draw(gs_effect_t *effect, overlay_image_t *image, const gs
     gs_matrix_push();
     gs_effect_set_texture(gs_effect_get_param_by_name(effect, "image"), image->texture);
     gs_matrix_translate3f(pos->x, pos->y, 1.f);
-    gs_draw_sprite_subregion(image->texture, 0, rect->x, rect->y, rect->cx, rect->cy);
+    gs_matrix_scale3f(1.f / m_texture_scale, 1.f / m_texture_scale, 1.f);
+    gs_draw_sprite_subregion(image->texture, 0, scale_to_pixels(rect->x, m_texture_scale),
+                             scale_to_pixels(rect->y, m_texture_scale),
+                             scale_to_pixels(rect->cx, m_texture_scale),
+                             scale_to_pixels(rect->cy, m_texture_scale));
     gs_matrix_pop();
 
     gs_blend_state_pop();
 }
 
-void element_texture::draw(gs_effect *effect, overlay_image_t *image, const gs_rect *rect, const vec2 *pos,
-                           const float angle)
+void element_texture::draw(gs_effect *effect, overlay_image_t *image, const gs_rect *rect,
+                           const vec2 *pos, const float angle) const
 {
     gs_effect_set_texture(gs_effect_get_param_by_name(effect, "image"), image->texture);
 
@@ -73,8 +88,10 @@ void element_texture::draw(gs_effect *effect, overlay_image_t *image, const gs_r
     {
         auto cx = static_cast<float>(rect->cx);
         auto cy = static_cast<float>(rect->cy);
+        const auto scale = m_texture_scale;
         /* Put into position */
         gs_matrix_translate3f(pos->x, pos->y + cy, 1.f);
+        gs_matrix_scale3f(1.f / scale, 1.f / scale, 1.f);
 
         /* Offset to rotation center (I think :P, rotations are tricky) */
         gs_matrix_translate3f(-(cx / 2.f), -(cy / 2.f), 1.f);
@@ -83,7 +100,10 @@ void element_texture::draw(gs_effect *effect, overlay_image_t *image, const gs_r
         /* Offset back */
         gs_matrix_translate3f(-(cx / 2.f), -(cy / 2.f), 1.f);
 
-        gs_draw_sprite_subregion(image->texture, 0, rect->x, rect->y, rect->cx, rect->cy);
+        gs_draw_sprite_subregion(image->texture, 0, scale_to_pixels(rect->x, m_texture_scale),
+                                 scale_to_pixels(rect->y, m_texture_scale),
+                                 scale_to_pixels(rect->cx, m_texture_scale),
+                                 scale_to_pixels(rect->cy, m_texture_scale));
     }
     gs_matrix_pop();
 }

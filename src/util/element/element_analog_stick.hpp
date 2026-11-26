@@ -20,6 +20,8 @@
 
 #include "element_texture.hpp"
 
+#include <array>
+
 enum stick_data_type {
     SD_BOTH,
     SD_PRESSED_STATE_LEFT,
@@ -44,4 +46,12 @@ private:
     gs_rect m_pressed{};
     element_side m_side;
     int32_t m_radius = 0;
+    int32_t m_touchpad_index = -1;
+    int32_t m_capsense = -1;
+    int32_t m_touchpad_click_code = -1;
+    gs_rect m_touchpad_click_mapping{};
+    std::array<float, 4> m_touchpad_transform{};
+    bool m_has_touchpad_click_mapping = false;
+    bool m_has_touchpad_transform = false;
+    bool m_touchpad_outline = false;
 };

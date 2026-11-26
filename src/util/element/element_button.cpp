@@ -25,6 +25,7 @@ void element_button::load(const QJsonObject &obj)
 {
     element_texture::load(obj);
     m_keycode = static_cast<uint16_t>(obj[CFG_KEY_CODE].toInt());
+    m_idle_in_background = obj["idle_in_background"].toBool(false);
     m_pressed = m_mapping;
     m_pressed.y = m_mapping.y + m_mapping.cy + CFG_INNER_BORDER;
 }
@@ -33,7 +34,7 @@ void element_keyboard_key::draw(gs_effect_t *effect, overlay_image_t *image, sou
 {
     if (settings->data.keyboard[m_keycode])
         element_texture::draw(effect, image, &m_pressed);
-    else
+    else if (!idle_in_background())
         element_button::draw(effect, image, nullptr);
 }
 
@@ -46,14 +47,22 @@ void element_mouse_button::draw(gs_effect_t *effect, overlay_image_t *image, sou
 {
     if (settings->data.mouse[m_keycode])
         element_texture::draw(effect, image, &m_pressed);
-    else
+    else if (!idle_in_background())
         element_button::draw(effect, image, nullptr);
+}
+
+void element_gamepad_button::load(const QJsonObject &obj)
+{
+    element_button::load(obj);
+    const auto capsense = obj["capsense"].toInt(-1);
+    if (capsense >= 0 && capsense < SDL_GAMEPAD_CAPSENSE_COUNT)
+        m_keycode = static_cast<uint16_t>(input_data::gamepad_capsense_code_base + capsense);
 }
 
 void element_gamepad_button::draw(gs_effect_t *effect, overlay_image_t *image, sources::overlay_settings *settings)
 {
     if (settings->is_pad_button_pressed(m_keycode))
         element_texture::draw(effect, image, &m_pressed);
-    else
+    else if (!idle_in_background())
         element_button::draw(effect, image, nullptr);
 }

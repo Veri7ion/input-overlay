@@ -34,4 +34,6 @@ private:
     element_side m_side;
     direction m_direction;
     bool m_button_mode = false;
+    bool m_full_on_touch = false;
+    bool m_idle_in_background = false;
 };

@@ -36,10 +36,9 @@ struct input_data;
 namespace gamepad_hook {
 extern std::atomic<bool> state;
 
-inline const char *controller_description(int index)
+inline const char *controller_description(SDL_JoystickID id)
 {
-
-    switch (SDL_GetGamepadTypeForID(index)) {
+    switch (SDL_GetGamepadTypeForID(id)) {
 
 #if SDL_VERSION_ATLEAST(2, 24, 0)
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
@@ -69,8 +68,7 @@ inline const char *controller_description(int index)
 
 class gamepads {
     std::mutex m_mutex{};
-    std::map<int, std::shared_ptr<sdl_gamepad>> m_pads{};
-    std::map<int, int> m_pad_instance_to_index{};
+    std::map<SDL_JoystickID, std::shared_ptr<sdl_gamepad>> m_pads{};
 
     static const char *get_sensor_name(SDL_SensorType sensor)
     {
@@ -100,57 +98,61 @@ public:
     auto &mutex() { return m_mutex; }
     auto &pads() { return m_pads; }
 
-    void add_controller(int index, std::string const &desc)
+    void add_controller(SDL_JoystickID id, std::string const &display_name)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        auto pad = std::make_shared<sdl_gamepad>(index, desc);
-        m_pads[index] = pad;
-        auto *js = SDL_GetGamepadJoystick(*pad);
-        if (js) {
-            auto idx = SDL_GetJoystickID(js);
-            if (idx >= 0)
-                m_pad_instance_to_index[idx] = index;
-            else
-                bwarn("Got invalid joystick instance id");
-        } else {
-            bwarn("Got invalid joystick");
+        if (m_pads.find(id) != m_pads.end()) {
+            bdebug("Ignoring duplicate gamepad add event for id %u", static_cast<unsigned>(id));
+            return;
+        }
+        auto pad = std::make_shared<sdl_gamepad>(id, display_name);
+        if (!pad->valid() || !static_cast<SDL_Gamepad *>(*pad)) {
+            bwarn("Couldn't open gamepad with id %u: %s", static_cast<unsigned>(id), SDL_GetError());
+            return;
+        }
+        const auto base_id = pad->selection_id();
+        const auto duplicate_id = std::any_of(m_pads.begin(), m_pads.end(), [&](const auto &entry) {
+            return entry.second->selection_id() == base_id;
+        });
+        if (duplicate_id)
+            pad->set_selection_id(base_id + "#instance:" + std::to_string(id));
+        m_pads[id] = std::move(pad);
+    }
+
+    void remove_controller(SDL_JoystickID id)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (m_pads.find(id) != m_pads.end()) {
+            m_pads[id]->invalidate();
+            m_pads.erase(id);
         }
     }
 
-    void remove_controller(int index)
+    std::shared_ptr<sdl_gamepad> get_controller_from_selection_id(const std::string &selection_id)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if (m_pads.find(index) != m_pads.end()) {
-            m_pads[index]->invalidate();
-            m_pads.erase(index);
-        }
-    }
+        if (selection_id.empty() && m_pads.size() == 1)
+            return m_pads.begin()->second;
 
-    std::shared_ptr<sdl_gamepad> get_controller_from_name(std::string name)
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_ptr<sdl_gamepad> legacy_match;
         for (const auto &pad : m_pads) {
-            if (pad.second->identifier() == name)
+            if (pad.second->selection_id() == selection_id)
                 return pad.second;
+            const auto display_label =
+                pad.second->display_name() + " (ID " + std::to_string(pad.second->index()) + ")";
+            if (display_label == selection_id)
+                return pad.second;
+            if (pad.second->display_name() == selection_id && !legacy_match)
+                legacy_match = pad.second;
         }
-        return nullptr;
+        return legacy_match;
     }
 
-    std::shared_ptr<sdl_gamepad> get_controller_from_instance_id(int id)
+    std::shared_ptr<sdl_gamepad> get_controller_from_instance_id(SDL_JoystickID id)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        auto index = instance_id_to_index(id);
-        if (m_pads.find(index) != m_pads.end())
-            return m_pads[index];
-        return nullptr;
-    }
-
-    int instance_id_to_index(int id)
-    {
-        auto idx = m_pad_instance_to_index.find(id);
-        if (idx != m_pad_instance_to_index.end())
-            return idx->second;
-        return -1;
+        const auto pad = m_pads.find(id);
+        return pad != m_pads.end() ? pad->second : nullptr;
     }
 
     void event_loop();

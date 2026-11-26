@@ -53,6 +53,7 @@ elseif(UNIX AND NOT APPLE)
   add_dependencies(${CMAKE_PROJECT_NAME} uiohook-x11 uiohook-wayland uiohook-xrecord)
   set(
     _uiohook_libraries
+    "$<TARGET_FILE:SDL3::SDL3>"
     "$<TARGET_FILE:uiohook>"
     "$<TARGET_FILE:uiohook-x11>"
     "$<TARGET_FILE:uiohook-wayland>"

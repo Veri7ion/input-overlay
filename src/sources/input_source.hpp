@@ -70,8 +70,18 @@ public:
 
     inline bool is_pad_button_pressed(int code)
     {
-        // TODO: We might need to check if the map actually contains data at the index
-        return data.gamepad_buttons[gamepad_name][code];
+        if (code >= 0 && code < SDL_GAMEPAD_BUTTON_COUNT) {
+            auto buttons = data.gamepad_buttons.find(gamepad_name);
+            return buttons != data.gamepad_buttons.end() && buttons->second[code];
+        }
+
+        auto capsense = code - input_data::gamepad_capsense_code_base;
+        if (capsense >= 0 && capsense < SDL_GAMEPAD_CAPSENSE_COUNT) {
+            auto states = data.gamepad_capsense.find(gamepad_name);
+            return states != data.gamepad_capsense.end() && states->second[capsense];
+        }
+
+        return false;
     }
 
     inline float pad_axis(int code)
@@ -82,6 +92,14 @@ public:
 
     // TODO: We might need to check if the map actually contains data at the index
     inline auto &get_button_map() { return data.gamepad_buttons[gamepad_name]; }
+
+    inline input_data::touchpad_state pad_touchpad(int index) const
+    {
+        if (index < 0 || index >= static_cast<int>(input_data::gamepad_touchpad_count))
+            return {};
+        auto touchpads = data.gamepad_touchpads.find(gamepad_name);
+        return touchpads == data.gamepad_touchpads.end() ? input_data::touchpad_state{} : touchpads->second[index];
+    }
 };
 
 class input_source {

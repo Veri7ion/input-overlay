@@ -67,8 +67,8 @@ inline int get_direction(std::array<bool, SDL_GAMEPAD_BUTTON_COUNT> const &butto
 
 void element_dpad::draw(gs_effect_t *effect, overlay_image_t *image, sources::overlay_settings *settings)
 {
-    auto dir = 0;
-    if (settings->gamepad)
+    auto dir = -1;
+    if (settings->gamepad || settings->remote_input_data)
         dir = get_direction(settings->get_button_map());
 
     if (dir >= 0) {

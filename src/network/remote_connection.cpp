@@ -130,6 +130,30 @@ void process_remote_event(struct mg_connection *ws, unsigned char *bytes, size_t
                 auto name = client_data->remote_gamepad_names[ev->gdevice.which];
                 client_data->gamepad_buttons[name][ev->gbutton.button] = ev->gbutton.down;
             } break;
+            case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
+            case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
+            case SDL_EVENT_GAMEPAD_TOUCHPAD_UP: {
+                if (ev->gtouchpad.touchpad >= 0 &&
+                    ev->gtouchpad.touchpad < static_cast<int>(input_data::gamepad_touchpad_count) &&
+                    ev->gtouchpad.finger == 0) {
+                    std::lock_guard<std::mutex> lock(client_data->m_mutex);
+                    auto name = client_data->remote_gamepad_names[ev->gtouchpad.which];
+                    auto &touchpad = client_data->gamepad_touchpads[name][ev->gtouchpad.touchpad];
+                    if (ev->type == SDL_EVENT_GAMEPAD_TOUCHPAD_UP) {
+                        touchpad = {};
+                    } else {
+                        touchpad = {true, ev->gtouchpad.x, ev->gtouchpad.y, ev->gtouchpad.pressure};
+                    }
+                }
+            } break;
+            case SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH:
+            case SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE: {
+                if (ev->gcapsense.capsense < SDL_GAMEPAD_CAPSENSE_COUNT) {
+                    std::lock_guard<std::mutex> lock(client_data->m_mutex);
+                    auto name = client_data->remote_gamepad_names[ev->gcapsense.which];
+                    client_data->gamepad_capsense[name][ev->gcapsense.capsense] = ev->gcapsense.down;
+                }
+            } break;
             case SDL_EVENT_GAMEPAD_ADDED: {
                 uint8_t *len2 = b.read<uint8_t>();
                 if (len) {
@@ -150,6 +174,8 @@ void process_remote_event(struct mg_connection *ws, unsigned char *bytes, size_t
                     client_data->remote_gamepad_names.erase(ev->gdevice.which);
                     client_data->gamepad_buttons.erase(gamepad_name);
                     client_data->gamepad_axis.erase(gamepad_name);
+                    client_data->gamepad_capsense.erase(gamepad_name);
+                    client_data->gamepad_touchpads.erase(gamepad_name);
                 }
                 break;
             }

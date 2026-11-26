@@ -51,7 +51,7 @@ inline void sdl_init()
     auto compile_ver_minor = SDL_VERSIONNUM_MINOR(compile_ver);
     auto compile_ver_patch = SDL_VERSIONNUM_MICRO(compile_ver);
 
-    binfo("Initializing SDL2 for gamepad input (compile-time: %i.%i.%i, run-time:  %i.%i.%i)", compile_ver_major,
+    binfo("Initializing SDL3 for gamepad input (compile-time: %i.%i.%i, run-time:  %i.%i.%i)", compile_ver_major,
           compile_ver_minor, compile_ver_patch, link_ver_major, link_ver_minor, link_ver_patch);
 
     // TODO: I think there's a flag for switching a and b on switch controllers, we might want that
@@ -71,9 +71,9 @@ inline void sdl_init()
     SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
 
     if (WIN32) {
-        dummy_window = SDL_CreateWindow("input-overlay sdl2 window", 10, 10, SDL_WINDOW_HIDDEN);
+        dummy_window = SDL_CreateWindow("input-overlay SDL3 window", 10, 10, SDL_WINDOW_HIDDEN);
         if (!dummy_window) {
-            berr("Couldn't create sdl2 window: %s\n", SDL_GetError());
+            berr("Couldn't create SDL3 window: %s\n", SDL_GetError());
             return;
         }
     }
@@ -136,10 +136,16 @@ void event_loop()
             switch (event.type) {
                 // TODO: process these events?
             case SDL_EVENT_JOYSTICK_BATTERY_UPDATED:
+            case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
+                break;
+            case SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH:
+            case SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE:
             case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
             case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
             case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
-            case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
+                queue.mutex.lock();
+                queue.events.emplace_back(event);
+                queue.mutex.unlock();
                 break;
             case SDL_EVENT_GAMEPAD_ADDED:
                 binfo("Found gamepad with id %i", event.cdevice.which);

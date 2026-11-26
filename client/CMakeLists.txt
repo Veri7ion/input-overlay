@@ -11,46 +11,15 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
             pthread)
 endif()
 
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/FetchSDL3.cmake")
+
 if (WIN32 OR WIN64)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(SDL3_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/../deps/sdl3/bin/x64/SDL3.lib")
-        set(SDL3_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/../deps/sdl3/bin/x64/SDL3.dll")
-        set(client_PLATFORM_DEPS
-	        ws2_32
-            iphlpapi)
+        set(client_PLATFORM_DEPS ws2_32 iphlpapi)
     elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        set(SDL3_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/../deps/sdl3/bin/x86/SDL3.lib")
-        set(SDL3_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/../deps/sdl3/bin/x86/SDL3.dll")
-        set(client_PLATFORM_DEPS
-            wsock32
-            iphlpapi)
+        set(client_PLATFORM_DEPS wsock32 iphlpapi)
     endif()
-
-
-    set(SDL3_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/../deps/sdl3/include")
-
-else ()
-    # On macOS, always build from source to support universal binaries (arm64+x86_64).
-    # Homebrew SDL3 is typically single-architecture only.
-    if(NOT APPLE)
-        find_package(SDL3 QUIET)
-    endif()
-    if(NOT SDL3_FOUND)
-        include(FetchContent)
-        FetchContent_Declare(
-            SDL3
-            GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-            GIT_TAG release-3.2.22
-            GIT_SHALLOW TRUE
-        )
-        set(SDL_SHARED ON CACHE BOOL "" FORCE)
-        set(SDL_STATIC OFF CACHE BOOL "" FORCE)
-        set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
-        FetchContent_MakeAvailable(SDL3)
-    endif()
-    set(SDL3_LIBRARIES SDL3::SDL3)
-    set(SDL3_INCLUDE_DIRS "")
-endif ()
+endif()
 
 set(io_client_SOURCES
     ../deps/mongoose/mongoose.c
@@ -106,6 +75,7 @@ elseif (UNIX AND NOT APPLE)
     add_dependencies(${PROJECT_NAME} uiohook-x11 uiohook-wayland uiohook-xrecord)
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN;$ORIGIN/bin/64bit")
     install(FILES
+        $<TARGET_FILE:SDL3::SDL3>
         $<TARGET_FILE:uiohook>
         $<TARGET_FILE:uiohook-x11>
         $<TARGET_FILE:uiohook-wayland>

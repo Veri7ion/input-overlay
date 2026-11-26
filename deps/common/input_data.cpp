@@ -37,6 +37,8 @@ void input_data::copy(const input_data *other, bool with_gamepad_data)
     if (with_gamepad_data) {
         gamepad_axis = other->gamepad_axis;
         gamepad_buttons = other->gamepad_buttons;
+        gamepad_capsense = other->gamepad_capsense;
+        gamepad_touchpads = other->gamepad_touchpads;
     }
 }
 

@@ -31,6 +31,8 @@ void element_trigger::load(const QJsonObject &obj)
 {
     element_texture::load(obj);
     m_button_mode = obj[CFG_TRIGGER_MODE].toBool();
+    m_full_on_touch = obj["trigger_full_on_touch"].toBool(false);
+    m_idle_in_background = obj["idle_in_background"].toBool(false);
     m_side = static_cast<element_side>(obj[CFG_SIDE].toInt());
     m_keycode = VC_TRIGGER_DATA;
     m_pressed = m_mapping;
@@ -58,13 +60,19 @@ void element_trigger::draw(gs_effect_t *effect, overlay_image_t *image, sources:
     if (m_button_mode) {
         if (progress >= 0.1)
             element_texture::draw(effect, image, &m_pressed);
-        else
+        else if (!m_idle_in_background)
             element_texture::draw(effect, image, &m_mapping);
+    } else if (m_full_on_touch) {
+        if (!m_idle_in_background)
+            element_texture::draw(effect, image, &m_mapping);
+        if (progress >= 0.01f)
+            element_texture::draw(effect, image, &m_pressed);
     } else {
         auto crop = m_pressed;
         auto new_pos = m_pos;
         calculate_mapping(&crop, &new_pos, progress);
-        element_texture::draw(effect, image, &m_mapping); /* Draw unpressed first */
+        if (!m_idle_in_background)
+            element_texture::draw(effect, image, &m_mapping);
         element_texture::draw(effect, image, &crop, &new_pos);
     }
 }

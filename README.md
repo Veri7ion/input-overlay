@@ -9,7 +9,9 @@ Head over to [releases](https://github.com/univrsal/input-overlay/releases) for 
 ## [Wiki](https://github.com/univrsal/input-overlay/wiki)
 ## [Installation](https://github.com/univrsal/input-overlay/wiki/Installation)
 ## Credits
-input-overlay depends on [libuiohook](https://github.com/kwhat/libuiohook) by [kwhat](https://github.com/kwhat) licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.txt), [mongoose](https://github.com/cesanta/mongoose) licensed under the [GNU General Public License v2.0](https://www.gnu.org/licenses/gpl-2.0.txt), [SDL2](https://libsdl.org) licensed under the [zlib license](https://www.zlib.net/zlib_license.html).
+input-overlay depends on [libuiohook](https://github.com/kwhat/libuiohook) by [kwhat](https://github.com/kwhat) licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.txt), [mongoose](https://github.com/cesanta/mongoose) licensed under the [GNU General Public License v2.0](https://www.gnu.org/licenses/gpl-2.0.txt), and [SDL3](https://libsdl.org) licensed under the [zlib license](https://www.zlib.net/zlib_license.html).
+
+The current SDL3 dependency is pinned to a development revision that provides gamepad capacitive-touch APIs. See [preset notes](./presets/README.md) for using touchpad and capacitive-touch inputs in layouts.
 
 ## More Information:
 - [OBS resource page](https://obsproject.com/forum/resources/input-overlay.552/)
